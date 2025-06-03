@@ -9,13 +9,278 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      client_portal_access: {
+        Row: {
+          access_granted_at: string | null
+          client_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          access_granted_at?: string | null
+          client_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          access_granted_at?: string | null
+          client_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_access_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          company: string | null
+          created_at: string | null
+          email: string
+          freelancer_id: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          preferred_currency: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          company?: string | null
+          created_at?: string | null
+          email: string
+          freelancer_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          preferred_currency?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          freelancer_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_currency?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number | null
+          rate: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number | null
+          rate: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number | null
+          rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          discount_amount: number | null
+          due_date: string | null
+          freelancer_id: string
+          id: string
+          invoice_number: string
+          issue_date: string | null
+          notes: string | null
+          payment_terms: string | null
+          status: string | null
+          tax_amount: number | null
+          title: string
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          due_date?: string | null
+          freelancer_id: string
+          id?: string
+          invoice_number: string
+          issue_date?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          status?: string | null
+          tax_amount?: number | null
+          title: string
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          due_date?: string | null
+          freelancer_id?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          status?: string | null
+          tax_amount?: number | null
+          title?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_comment: string | null
+          created_at: string | null
+          id: string
+          invoice_id: string
+          paid_by_client: boolean | null
+          payment_comment: string | null
+          payment_date: string | null
+          payment_method: string
+        }
+        Insert: {
+          amount: number
+          client_comment?: string | null
+          created_at?: string | null
+          id?: string
+          invoice_id: string
+          paid_by_client?: boolean | null
+          payment_comment?: string | null
+          payment_date?: string | null
+          payment_method: string
+        }
+        Update: {
+          amount?: number
+          client_comment?: string | null
+          created_at?: string | null
+          id?: string
+          invoice_id?: string
+          paid_by_client?: boolean | null
+          payment_comment?: string | null
+          payment_date?: string | null
+          payment_method?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          company_name: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_freelancer: boolean | null
+          logo_url: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          is_freelancer?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_freelancer?: boolean | null
+          logo_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
