@@ -9,6 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_users: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_users_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          default_currency: string | null
+          default_payment_terms: string | null
+          email: string
+          id: string
+          invoice_prefix: string | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          tax_id: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          default_currency?: string | null
+          default_payment_terms?: string | null
+          email: string
+          id?: string
+          invoice_prefix?: string | null
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          default_currency?: string | null
+          default_payment_terms?: string | null
+          email?: string
+          id?: string
+          invoice_prefix?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       client_portal_access: {
         Row: {
           access_granted_at: string | null
@@ -41,6 +121,7 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          business_id: string
           company: string | null
           created_at: string | null
           email: string
@@ -54,6 +135,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_id: string
           company?: string | null
           created_at?: string | null
           email: string
@@ -67,6 +149,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_id?: string
           company?: string | null
           created_at?: string | null
           email?: string
@@ -78,7 +161,15 @@ export type Database = {
           preferred_currency?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_items: {
         Row: {
@@ -121,6 +212,7 @@ export type Database = {
       invoices: {
         Row: {
           amount: number
+          business_id: string
           client_id: string
           created_at: string | null
           currency: string | null
@@ -141,6 +233,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          business_id: string
           client_id: string
           created_at?: string | null
           currency?: string | null
@@ -161,6 +254,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          business_id?: string
           client_id?: string
           created_at?: string | null
           currency?: string | null
@@ -180,6 +274,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_client_id_fkey"
             columns: ["client_id"]
@@ -242,6 +343,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_freelancer: boolean | null
+          is_system_admin: boolean | null
           logo_url: string | null
           phone: string | null
           updated_at: string | null
@@ -254,6 +356,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_freelancer?: boolean | null
+          is_system_admin?: boolean | null
           logo_url?: string | null
           phone?: string | null
           updated_at?: string | null
@@ -266,6 +369,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_freelancer?: boolean | null
+          is_system_admin?: boolean | null
           logo_url?: string | null
           phone?: string | null
           updated_at?: string | null

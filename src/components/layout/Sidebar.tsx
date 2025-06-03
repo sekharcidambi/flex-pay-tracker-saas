@@ -6,9 +6,13 @@ import {
   Settings, 
   CreditCard, 
   BarChart3,
-  Plus
+  Plus,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SidebarProps {
   activeTab: string;
@@ -16,6 +20,29 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
+  const { user } = useAuth();
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_system_admin')
+        .eq('id', user.id)
+        .single();
+
+      setIsSystemAdmin(profile?.is_system_admin || false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'invoices', label: 'Invoices', icon: FileText },
@@ -29,11 +56,14 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-bold text-gray-900">InvoiceTracker</h1>
-        <p className="text-sm text-gray-500 mt-1">Freelancer Edition</p>
+        <p className="text-sm text-gray-500 mt-1">Multi-Tenant Edition</p>
       </div>
       
       <div className="p-4">
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <button 
+          onClick={() => onTabChange('invoices')}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           New Invoice
         </button>
@@ -60,6 +90,18 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
               </li>
             );
           })}
+          
+          {isSystemAdmin && (
+            <li className="pt-4 border-t border-gray-200">
+              <a
+                href="/admin"
+                className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                <Shield className="w-5 h-5" />
+                Admin Panel
+              </a>
+            </li>
+          )}
         </ul>
       </nav>
     </div>

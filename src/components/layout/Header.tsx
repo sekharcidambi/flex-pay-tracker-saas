@@ -1,8 +1,9 @@
 
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { useBusiness } from '@/hooks/useBusiness';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
+  const { currentBusiness, businesses, switchBusiness } = useBusiness();
 
   const handleSignOut = async () => {
     await signOut();
@@ -34,6 +36,31 @@ export const Header = () => {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* Business Selector */}
+          {businesses.length > 1 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Building2 className="w-4 h-4" />
+                  {currentBusiness?.name}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Switch Business</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {businesses.map((business) => (
+                  <DropdownMenuItem
+                    key={business.id}
+                    onClick={() => switchBusiness(business.id)}
+                    className={currentBusiness?.id === business.id ? 'bg-gray-100' : ''}
+                  >
+                    {business.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           <Button variant="ghost" size="sm">
             <Bell className="w-5 h-5" />
           </Button>
@@ -58,6 +85,11 @@ export const Header = () => {
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
+                  {currentBusiness && (
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {currentBusiness.name}
+                    </p>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

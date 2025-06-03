@@ -1,74 +1,167 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { InvoiceForm } from './InvoiceForm';
+import { supabase } from '@/integrations/supabase/client';
+import { useBusiness } from '@/hooks/useBusiness';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  title: string;
+  total_amount: number;
+  currency: string;
+  status: string;
+  due_date: string;
+  issue_date: string;
+  client_id: string;
+  clients: {
+    name: string;
+    company?: string;
+  };
+}
 
 export const InvoiceList = () => {
+  const { currentBusiness } = useBusiness();
   const [searchQuery, setSearchQuery] = useState('');
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<any>();
 
-  const invoices = [
-    {
-      id: 'INV-001',
-      client: 'Acme Corp',
-      amount: '$2,500',
-      status: 'paid',
-      dueDate: '2024-01-15',
-      createdDate: '2024-01-01',
-    },
-    {
-      id: 'INV-002',
-      client: 'Tech Solutions',
-      amount: '$1,800',
-      status: 'pending',
-      dueDate: '2024-01-20',
-      createdDate: '2024-01-05',
-    },
-    {
-      id: 'INV-003',
-      client: 'Design Studio',
-      amount: '$3,200',
-      status: 'overdue',
-      dueDate: '2024-01-10',
-      createdDate: '2023-12-20',
-    },
-    {
-      id: 'INV-004',
-      client: 'StartupXYZ',
-      amount: '$950',
-      status: 'draft',
-      dueDate: '2024-01-25',
-      createdDate: '2024-01-12',
-    },
-  ];
+  useEffect(() => {
+    if (currentBusiness) {
+      fetchInvoices();
+    }
+  }, [currentBusiness]);
+
+  const fetchInvoices = async () => {
+    if (!currentBusiness) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          clients (
+            name,
+            company
+          )
+        `)
+        .eq('business_id', currentBusiness.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setInvoices(data || []);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      toast.error('Failed to fetch invoices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = async (invoice: Invoice) => {
+    try {
+      // Fetch invoice items
+      const { data: items, error } = await supabase
+        .from('invoice_items')
+        .select('*')
+        .eq('invoice_id', invoice.id);
+
+      if (error) throw error;
+
+      setEditingInvoice({
+        ...invoice,
+        items: items || []
+      });
+      setShowForm(true);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load invoice details');
+    }
+  };
+
+  const handleDelete = async (invoiceId: string) => {
+    if (!confirm('Are you sure you want to delete this invoice?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('id', invoiceId);
+
+      if (error) throw error;
+      toast.success('Invoice deleted successfully');
+      fetchInvoices();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete invoice');
+    }
+  };
+
+  const handleFormSave = () => {
+    setShowForm(false);
+    setEditingInvoice(undefined);
+    fetchInvoices();
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingInvoice(undefined);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
         return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
       case 'overdue':
         return 'bg-red-100 text-red-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
+      case 'sent':
+        return 'bg-blue-100 text-blue-800';
+      case 'viewed':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const filteredInvoices = invoices.filter(invoice =>
+    invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.clients.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (!currentBusiness) {
+    return <div>Loading...</div>;
+  }
+
+  if (showForm) {
+    return (
+      <div className="space-y-6">
+        <InvoiceForm
+          invoice={editingInvoice}
+          onSave={handleFormSave}
+          onCancel={handleFormCancel}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-600 mt-1">Manage and track your invoices.</p>
+          <p className="text-gray-600 mt-1">Create and manage your invoices.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4 mr-2" />
-          New Invoice
+          Create Invoice
         </Button>
       </div>
 
@@ -83,52 +176,59 @@ export const InvoiceList = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Invoice</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Client</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Due Date</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice) => (
-                <tr key={invoice.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900">{invoice.id}</p>
-                      <p className="text-sm text-gray-500">Created: {invoice.createdDate}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-gray-900">{invoice.client}</td>
-                  <td className="py-4 px-4 font-medium text-gray-900">{invoice.amount}</td>
-                  <td className="py-4 px-4">
-                    <Badge className={getStatusColor(invoice.status)}>
-                      {invoice.status}
-                    </Badge>
-                  </td>
-                  <td className="py-4 px-4 text-gray-900">{invoice.dueDate}</td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">View</Button>
-                      <Button variant="outline" size="sm">Edit</Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading invoices...</p>
+          </div>
+        ) : filteredInvoices.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">No invoices found.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredInvoices.map((invoice) => (
+              <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="font-medium text-gray-900">{invoice.invoice_number}</p>
+                    <p className="text-sm text-gray-600">{invoice.title}</p>
+                    <p className="text-sm text-gray-500">
+                      {invoice.clients.name} {invoice.clients.company && `(${invoice.clients.company})`}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-medium text-gray-900">
+                      {invoice.currency} {invoice.total_amount.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Due: {format(new Date(invoice.due_date), 'MMM dd, yyyy')}
+                    </p>
+                  </div>
+                  <Badge className={getStatusColor(invoice.status)}>
+                    {invoice.status}
+                  </Badge>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(invoice)}>
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(invoice.id)}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );

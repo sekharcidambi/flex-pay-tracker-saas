@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,9 +54,20 @@ export default function ClientPortal() {
 
   const fetchInvoices = async () => {
     try {
+      // Fetch invoices that the user has portal access to
       const { data, error } = await supabase
         .from('invoices')
-        .select('*')
+        .select(`
+          *,
+          clients!inner (
+            id,
+            name,
+            client_portal_access!inner (
+              user_id
+            )
+          )
+        `)
+        .eq('clients.client_portal_access.user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
