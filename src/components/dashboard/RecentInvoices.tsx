@@ -1,39 +1,30 @@
-
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useBusiness } from '@/hooks/useBusiness';
+import { supabase } from '@/integrations/supabase/client';
 
 export const RecentInvoices = () => {
-  const invoices = [
-    {
-      id: 'INV-001',
-      client: 'Acme Corp',
-      amount: '$2,500',
-      status: 'paid',
-      dueDate: '2024-01-15',
-    },
-    {
-      id: 'INV-002',
-      client: 'Tech Solutions',
-      amount: '$1,800',
-      status: 'pending',
-      dueDate: '2024-01-20',
-    },
-    {
-      id: 'INV-003',
-      client: 'Design Studio',
-      amount: '$3,200',
-      status: 'overdue',
-      dueDate: '2024-01-10',
-    },
-    {
-      id: 'INV-004',
-      client: 'StartupXYZ',
-      amount: '$950',
-      status: 'draft',
-      dueDate: '2024-01-25',
-    },
-  ];
+  const { currentBusiness } = useBusiness();
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentBusiness) return;
+    setLoading(true);
+    const fetchInvoices = async () => {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, total_amount, status, due_date, clients(name)')
+        .eq('business_id', currentBusiness.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (!error) setInvoices(data || []);
+      setLoading(false);
+    };
+    fetchInvoices();
+  }, [currentBusiness]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -56,28 +47,30 @@ export const RecentInvoices = () => {
         <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
         <Button variant="outline" size="sm">View All</Button>
       </div>
-      
       <div className="space-y-4">
-        {invoices.map((invoice) => (
-          <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-4">
+        {loading ? (
+          <div className="text-gray-500">Loading...</div>
+        ) : invoices.length === 0 ? (
+          <div className="text-gray-500">No recent invoices.</div>
+        ) : (
+          invoices.map((invoice) => (
+            <div key={invoice.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium text-gray-900">{invoice.id}</p>
-                <p className="text-sm text-gray-600">{invoice.client}</p>
+                <p className="font-medium text-gray-900">{invoice.invoice_number || invoice.id}</p>
+                <p className="text-sm text-gray-600">{invoice.clients?.name || 'Unknown Client'}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">${invoice.total_amount?.toLocaleString()}</p>
+                  <p className="text-sm text-gray-600">Due: {invoice.due_date}</p>
+                </div>
+                <Badge className={getStatusColor(invoice.status)}>
+                  {invoice.status}
+                </Badge>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="font-medium text-gray-900">{invoice.amount}</p>
-                <p className="text-sm text-gray-600">Due: {invoice.dueDate}</p>
-              </div>
-              <Badge className={getStatusColor(invoice.status)}>
-                {invoice.status}
-              </Badge>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </Card>
   );
