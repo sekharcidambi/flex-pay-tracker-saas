@@ -1,6 +1,7 @@
+'use client';
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,7 @@ export const AuthPage = () => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleGoogleSignIn = async () => {
     try {
@@ -38,7 +39,7 @@ export const AuthPage = () => {
         toast.error(error.message);
       } else {
         toast.success('Signed in successfully!');
-        navigate('/');
+        router.push('/');
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
