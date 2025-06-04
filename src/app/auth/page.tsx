@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { toast } from 'sonner';
 
+const REDIRECT_URL = process.env.NEXT_PUBLIC_VERCEL_URL 
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  : process.env.NEXT_PUBLIC_SITE_URL || 'https://v0-generate-ui-from-prd-five-iota.vercel.app';
+
 export default function AuthPage() {
   const router = useRouter();
   const supabase = createBrowserClient(
@@ -14,6 +18,10 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase configuration:', {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      });
       toast.error('Missing Supabase configuration');
       return;
     }
@@ -21,6 +29,7 @@ export default function AuthPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
       if (event === 'SIGNED_IN' && session) {
         router.push('/');
       }
@@ -33,24 +42,36 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase configuration:', {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      });
       toast.error('Missing Supabase configuration');
       return;
     }
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Starting Google sign-in...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${REDIRECT_URL}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
       if (error) {
+        console.error('Supabase auth error:', error);
         throw error;
       }
+
+      console.log('Sign-in response:', data);
     } catch (error) {
-      toast.error('Failed to sign in with Google');
       console.error('Error signing in with Google:', error);
+      toast.error('Failed to sign in with Google');
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { 
   LayoutDashboard, 
   FileText, 
@@ -13,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useBusiness } from '@/hooks/useBusiness';
 
 interface SidebarProps {
   activeTab: string;
@@ -21,6 +21,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
   const { user } = useAuth();
+  const { currentBusiness, loading: businessLoading } = useBusiness();
   const [isSystemAdmin, setIsSystemAdmin] = useState(false);
 
   useEffect(() => {
@@ -56,7 +57,9 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-bold text-gray-900">InvoiceTracker</h1>
-        <p className="text-sm text-gray-500 mt-1">Multi-Tenant Edition</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {businessLoading ? 'Loading...' : currentBusiness?.name || 'Business'}
+        </p>
       </div>
       
       <div className="p-4">
