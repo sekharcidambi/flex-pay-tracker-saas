@@ -1,73 +1,87 @@
-# Welcome to your Lovable project
+# FlexPay SaaS - Multi-Tenant Invoice Management
 
-## Project info
+A modern, multi-tenant SaaS platform for managing invoices, clients, and payments. Built with Next.js, Supabase, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/e434b04b-acea-41b2-90a7-981f2f1951f1
+---
 
-## How can I edit this code?
+## Features
+- **Multi-tenant**: Each business has its own clients, invoices, and settings
+- **Google Authentication**: Secure login with Google OAuth
+- **Admin Onboarding**: System admins can onboard new businesses and assign admin users
+- **Business Settings**: Businesses can view and edit their profile and preferences
+- **Client Management**: Add, edit, and manage clients per business
+- **Invoice Management**: Create, edit, and track invoices
+- **Payments (coming soon)**: Manage and track payments
+- **Dashboard**: Real-time stats and recent activity for each business
+- **Responsive UI**: Built with Tailwind CSS and shadcn/ui
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## Tech Stack
+- [Next.js](https://nextjs.org/) (App Router)
+- [Supabase](https://supabase.com/) (Database & Auth)
+- [React](https://react.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Vercel](https://vercel.com/) (Deployment)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e434b04b-acea-41b2-90a7-981f2f1951f1) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+### 1. Clone the repository
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+cd flex-pay-tracker-saas
 ```
 
-**Edit a file directly in GitHub**
+### 2. Install dependencies
+```sh
+npm install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### 3. Set up environment variables
+Create a `.env.local` file in the root with:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+- Get your Supabase URL and anon key from your Supabase project settings.
+- For production, set `NEXT_PUBLIC_SITE_URL` to your deployed URL.
 
-**Use GitHub Codespaces**
+### 4. Run the development server
+```sh
+npm run dev
+```
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## Deployment
+- Deploy easily to [Vercel](https://vercel.com/)
+- Set the same environment variables in your Vercel project settings
+- Add your Vercel URL to Supabase Auth redirect URLs
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Database Schema (Supabase)
+- `businesses`: Stores business info (name, email, etc.)
+- `profiles`: Stores user info
+- `business_users`: Links users to businesses with roles
+- `clients`: Stores client info per business
+- `invoices`: Stores invoices per business
+- `payments`: (coming soon)
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/e434b04b-acea-41b2-90a7-981f2f1951f1) and click on Share -> Publish.
+## Contributing
+1. Fork the repo
+2. Create a feature branch
+3. Commit your changes
+4. Open a pull request
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## License
+MIT
