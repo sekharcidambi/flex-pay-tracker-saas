@@ -3,9 +3,11 @@ import { Card } from '@/components/ui/card';
 import { DollarSign, FileText, Clock, Users } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from 'next-themes';
 
 export const DashboardStats = () => {
   const { currentBusiness } = useBusiness();
+  const { resolvedTheme } = useTheme();
   const [stats, setStats] = useState({
     totalRevenue: 0,
     outstanding: 0,
@@ -81,11 +83,11 @@ export const DashboardStats = () => {
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.title} className="p-6">
+          <Card key={stat.title} className={`p-6 ${resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.title}</p>
+                <p className="text-2xl font-bold mt-2">{stat.value}</p>
               </div>
               <div className={`${stat.bgColor} ${stat.color} p-3 rounded-lg`}>
                 <Icon className="w-6 h-6" />

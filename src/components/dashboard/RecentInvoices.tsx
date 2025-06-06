@@ -4,11 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from 'next-themes';
 
 export const RecentInvoices = () => {
   const { currentBusiness } = useBusiness();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!currentBusiness) return;
@@ -42,9 +44,9 @@ export const RecentInvoices = () => {
   };
 
   return (
-    <Card className="p-6">
+    <Card className={`p-6 ${resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+        <h3 className="text-lg font-semibold">Recent Invoices</h3>
         <Button variant="outline" size="sm">View All</Button>
       </div>
       <div className="space-y-4">

@@ -1,6 +1,6 @@
-
 import { Card } from '@/components/ui/card';
 import { FileText, DollarSign, User, Mail } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 export const RecentActivity = () => {
   const activities = [
@@ -38,9 +38,11 @@ export const RecentActivity = () => {
     },
   ];
 
+  const { resolvedTheme } = useTheme();
+
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+    <Card className={`p-6 ${resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
+      <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
       
       <div className="space-y-4">
         {activities.map((activity) => {
