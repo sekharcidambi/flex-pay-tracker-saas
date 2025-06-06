@@ -43,25 +43,39 @@ export default function AdminPage() {
   }, [user]);
 
   const checkAdminStatus = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('AdminPage: No user found.');
+      setLoading(false);
+      return;
+    }
+
+    console.log('AdminPage: Checking admin status for user ID:', user.id);
 
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_system_admin')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('AdminPage: Error fetching profile:', error);
+        throw error;
+      }
       
+      console.log('AdminPage: Fetched profile data:', profile);
+      console.log('AdminPage: is_system_admin value:', profile?.is_system_admin);
+
       if (profile?.is_system_admin) {
+        console.log('AdminPage: User is system admin.');
         setIsAdmin(true);
         await fetchBusinessStats();
       } else {
+        console.log('AdminPage: User is NOT system admin.');
         setLoading(false);
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('AdminPage: Error checking admin status (caught):', error);
       setLoading(false);
     }
   };
