@@ -1,1 +1,1 @@
-{"/auth/page":"/auth","/admin/page":"/admin","/auth/callback/route":"/auth/callback","/page":"/","/client-portal/page":"/client-portal","/_not-found":"/_not-found"}
+{"/_not-found":"/_not-found","/admin/page":"/admin","/auth/callback/route":"/auth/callback","/client-portal/page":"/client-portal","/auth/page":"/auth","/clients/page":"/clients","/invoices/page":"/invoices","/page":"/","/payments/page":"/payments"}

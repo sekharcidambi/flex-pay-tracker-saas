@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, SupabaseClient } from '@supabase/supabase-js'; // Import SupabaseClient
 import { supabase } from '@/integrations/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -11,6 +11,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signUpWithEmail: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  supabase: SupabaseClient; // Add supabase property here
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,7 +87,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
-      signOut
+      signOut,
+      supabase, // Include supabase in the value here
     }}>
       {children}
     </AuthContext.Provider>
