@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { CreateBusinessForm } from '@/components/business/CreateBusinessForm';
@@ -33,34 +32,44 @@ interface Business {
 }
 
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, supabase } = useAuth();
   const [businesses, setBusinesses] = useState<BusinessStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    checkAdminStatus();
-  }, [user]);
+    if (user && supabase) {
+      checkAdminStatus();
+    } else if (!user) {
+       console.log('AdminPage: No user found in useAuth effect.');
+       setLoading(false);
+    }
+  }, [user, supabase]);
 
   const checkAdminStatus = async () => {
-    if (!user) {
-      console.log('AdminPage: No user found.');
+    console.log('AdminPage: checkAdminStatus function called.');
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    if (!currentUser) {
+      console.log('AdminPage: No current user found via supabase.auth.getUser() before profile fetch.');
       setLoading(false);
       return;
     }
 
-    console.log('AdminPage: Checking admin status for user ID:', user.id);
+    console.log('AdminPage: Current user ID confirmed via auth.getUser():', currentUser.id);
+    console.log('AdminPage: Checking admin status for user ID:', currentUser.id);
 
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_system_admin')
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .maybeSingle();
 
       if (error) {
         console.error('AdminPage: Error fetching profile:', error);
-        throw error;
+        setLoading(false);
+        return;
       }
       
       console.log('AdminPage: Fetched profile data:', profile);
@@ -81,8 +90,11 @@ export default function AdminPage() {
   };
 
   const fetchBusinessStats = async () => {
+    if (!supabase) return;
+
+    console.log('AdminPage: fetchBusinessStats function called.');
+
     try {
-      // Fetch businesses with client and invoice counts
       const { data: businessData, error: businessError } = await supabase
         .from('businesses')
         .select(`
@@ -94,9 +106,14 @@ export default function AdminPage() {
           invoices!businesses_business_id_fkey(count, total_amount)
         `);
 
-      if (businessError) throw businessError;
+      if (businessError) {
+        console.error('AdminPage: Error fetching business stats:', businessError);
+        setLoading(false);
+        return;
+      }
 
-      // Transform the data to calculate stats
+      console.log('AdminPage: Successfully fetched business data.', businessData);
+
       const businessStats: BusinessStats[] = (businessData as any[] || []).map(business => {
         const clientCount = Array.isArray(business.clients) ? business.clients.length : 0;
         const invoices = Array.isArray(business.invoices) ? business.invoices : [];
